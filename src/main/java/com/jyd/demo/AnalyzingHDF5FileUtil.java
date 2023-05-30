@@ -36,7 +36,7 @@ public class AnalyzingHDF5FileUtil {
                 }
             }
             // 绘制卫星图 灰度图
-            JFreeChart chart = ChartFactory.createXYLineChart("", "", "", new DefaultXYDataset(), PlotOrientation.VERTICAL, false, false, false);
+            JFreeChart chart = ChartFactory.createXYLineChart("", "", "", new DefaultXYDataset(), PlotOrientation.VERTICAL, false, true, false);
             chart.setBackgroundPaint(new Color(0xFF, 0xFF, 0xFF, 0));
             BufferedImage image = chart.createBufferedImage(shape[1], shape[0]);
             float max = -Float.MAX_VALUE;
@@ -62,6 +62,22 @@ public class AnalyzingHDF5FileUtil {
                     image.setRGB(j, i, color.getRGB());
                 }
             }
+            // 切出1058×840的图片，以圆心切（+,+）坐标系的图片
+            int x = 1058;
+            int y = 840;
+            // 中心点
+            int x0 = shape[1] / 2;
+            int y0 = shape[0] / 2;
+            // 正坐标点
+            int x1 = x0 - x / 2;
+            int y1 = y0 - y / 2;
+            BufferedImage image1 = new BufferedImage(x, y, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics = image1.createGraphics();
+            graphics.drawImage(image, 0, 0, x, y, x1, y1, x1 + x, y1 + y, null);
+            graphics.dispose();
+            image = image1;
+
+
             // 保存卫星图
             String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             ImageIO.write(image, "png", new File(storagePath + "/" + time + ".png"));
